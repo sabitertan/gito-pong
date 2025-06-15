@@ -4,10 +4,37 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>Vite Game Catalog</title>
+    <style>
+      /* Simple, playful catalog styles */
+      body { background: #181c2f; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+      .catalog { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+      .game-card { background: #23264a; border-radius: 18px; box-shadow: 0 0 24px #00ffe7a0; padding: 2rem 3rem; margin: 1rem; text-align: center; transition: transform 0.2s; }
+      .game-card:hover { transform: scale(1.04); box-shadow: 0 0 32px #00ffe7; }
+      .game-title { font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; color: #00ffe7; text-shadow: 0 0 8px #00ffe7a0; }
+      .game-desc { font-size: 1.1rem; margin-bottom: 1.5rem; color: #b3e6ff; }
+      .play-btn { background: linear-gradient(90deg, #00ffe7, #ff00c8); color: #181c2f; border: none; border-radius: 12px; padding: 0.8rem 2.2rem; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 0 12px #00ffe7a0; transition: background 0.2s, color 0.2s; }
+      .play-btn:hover { background: linear-gradient(90deg, #ff00c8, #00ffe7); color: #fff; }
+      #app { display: none; }
+    </style>
   </head>
   <body>
+    <div class="catalog" id="catalog">
+      <div class="game-card">
+        <div class="game-title">Pong (80s Edition)</div>
+        <div class="game-desc">Classic Pong with glowing 80s vibes, 10 levels, chiptune music, and fun AI!</div>
+        <button class="play-btn" onclick="startPong()">Play Pong</button>
+      </div>
+      <!-- Add more game cards here in the future -->
+    </div>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
+    <script>
+      // Show game and hide catalog when Play is clicked
+      function startPong() {
+        document.getElementById('catalog').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+      }
+    </script>
   </body>
 </html>
