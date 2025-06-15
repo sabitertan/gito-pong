@@ -310,6 +310,7 @@ function showNextLevelOverlay() {
 }
 
 function showWinOverlay() {
+  console.log('showWinOverlay called, level:', level);
   waitingForNextLevel = true;
   stopAtariMusic();
   const overlay = document.createElement('div');
@@ -356,7 +357,8 @@ function restartGame() {
 
 // Level up every time player score reaches 3, up to maxLevel
 function checkLevelUp() {
-  if (level < maxLevel && playerScore > 0 && playerScore % 3 === 0) {
+  console.log('checkLevelUp called, level:', level, 'maxLevel:', maxLevel, 'playerScore:', playerScore);
+  if (playerScore > 0 && playerScore % 3 === 0) {
     level++;
     aiSpeed = 1.5 + (level - 1) * 0.7;
     updateLevelDisplay();
@@ -374,6 +376,30 @@ function checkLevelUp() {
     }
   }
 }
+
+// Expose game state for E2E testing and provide setters that sync with real variables
+window.getGameState = function() {
+  return {
+    ballX, ballY, ballDX, ballDY, playerScore, aiScore, level, waitingForNextLevel
+  };
+};
+window.setGameState = function(state) {
+  if (typeof state.ballX === 'number') ballX = state.ballX;
+  if (typeof state.ballY === 'number') ballY = state.ballY;
+  if (typeof state.ballDX === 'number') ballDX = state.ballDX;
+  if (typeof state.ballDY === 'number') ballDY = state.ballDY;
+  if (typeof state.playerScore === 'number') playerScore = state.playerScore;
+  if (typeof state.aiScore === 'number') aiScore = state.aiScore;
+  if (typeof state.level === 'number') level = state.level;
+  if (typeof state.waitingForNextLevel === 'boolean') waitingForNextLevel = state.waitingForNextLevel;
+  updateScoreboard();
+  updateLevelDisplay();
+};
+
+// Expose a direct level up function for E2E testing
+window.forceLevelUp = function() {
+  checkLevelUp();
+};
 
 // Initialize displays on load
 updateScoreboard();
