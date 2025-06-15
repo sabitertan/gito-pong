@@ -2,14 +2,20 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Pong Game UI', () => {
+  // Go to the catalog, click Play Pong, then test the game UI
   test('should load the game canvas', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5173/');
+    await page.click('a.play-btn');
+    await page.waitForSelector('canvas#gameCanvas');
     const canvas = await page.$('canvas#gameCanvas');
     expect(canvas).not.toBeNull();
   });
 
   test('should show level display and scoreboard on start', async ({ page }) => {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5173/');
+    await page.click('a.play-btn');
+    await page.waitForSelector('#levelDisplay');
+    await page.waitForSelector('#scoreboard');
     const levelDisplay = await page.$('#levelDisplay');
     const scoreboard = await page.$('#scoreboard');
     expect(levelDisplay).not.toBeNull();
@@ -24,7 +30,9 @@ test.describe('Pong Game UI', () => {
         console.log('BROWSER LOG:', msg.text());
       }
     });
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5173/');
+    await page.click('a.play-btn');
+    await page.waitForSelector('canvas#gameCanvas');
     for (let lvl = 1; lvl <= 10; lvl++) {
       await page.evaluate(() => {
         window.setGameState({ playerScore: 3 });

@@ -3,10 +3,14 @@
 import { test, expect } from '@playwright/test';
 
 test('Capture Pong Screenshots and Demo GIF Frames', async ({ page }) => {
-  await page.goto('http://localhost:5173');
+  await page.goto('http://localhost:5173/');
 
   // Main menu (start screen)
   await page.screenshot({ path: 'screenshots/pong-main.png' });
+
+  // Start the game by clicking Play Pong
+  await page.click('a.play-btn');
+  await page.waitForSelector('canvas#gameCanvas');
 
   // Gameplay: simulate a few frames
   for (let i = 0; i < 10; i++) {
@@ -50,7 +54,10 @@ test('Capture Pong Screenshots and Demo GIF Frames', async ({ page }) => {
   await page.screenshot({ path: 'screenshots/pong-win.png' });
 
   // Gameplay GIF: capture a sequence of frames
-  await page.reload();
+  // Instead of reload, go back to catalog and start again
+  await page.goto('http://localhost:5173/');
+  await page.click('a.play-btn');
+  await page.waitForSelector('canvas#gameCanvas');
   for (let i = 0; i < 20; i++) {
     await page.waitForTimeout(80);
     await page.screenshot({ path: `screenshots/pong-demo-${String(i).padStart(2, '0')}.png` });

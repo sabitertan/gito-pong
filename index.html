@@ -23,18 +23,14 @@
       <div class="game-card">
         <div class="game-title">Pong (80s Edition)</div>
         <div class="game-desc">Classic Pong with glowing 80s vibes, 10 levels, chiptune music, and fun AI!</div>
-        <button class="play-btn" onclick="startPong()">Play Pong</button>
+        <a class="play-btn" href="src/games/pong.html">Play Pong</a>
       </div>
       <!-- Add more game cards here in the future -->
     </div>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
     <script>
-      // Show game and hide catalog when Play is clicked
-      function startPong() {
-        document.getElementById('catalog').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-      }
+      // No longer needed: startPong() now handled by link
     </script>
   </body>
 </html>
