@@ -1,5 +1,7 @@
 # Vite Pong Game
 
+[![Build & Deploy](https://github.com/sabitertan/gito-pong/actions/workflows/deploy.yml/badge.svg)](https://github.com/sabitertan/gito-pong/actions/workflows/deploy.yml)
+
 A modern, beginner-friendly Pong clone built with vanilla JavaScript and Vite. Play through 10 levels with increasing AI difficulty, glowing 80s-style prompts, and chiptune music!
 
 ---
