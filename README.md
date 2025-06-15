@@ -4,6 +4,11 @@ A modern, beginner-friendly Pong clone built with vanilla JavaScript and Vite. P
 
 ---
 
+## 🚀 Play Now
+[Play the game on GitHub Pages!](https://sabitertan.github.io/gito-pong/)
+
+---
+
 ## Screenshots & Demo
 
 ![Main Menu](screenshots/pong-main.png)
