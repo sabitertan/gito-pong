@@ -14,14 +14,20 @@ boardEl.style.gap = '12px';
 boardEl.style.justifyContent = 'center';
 boardEl.style.margin = '40px auto';
 
-let board, currentPlayer, gameOver, mode;
+let board, currentPlayer, gameOver, mode = 'ai';
 let level = 1;
 const maxLevel = 10;
 let playerScore = 0;
 let aiScore = 0;
 
+function getBoardSize() {
+  // Board size increases by 1 each level, min 3, max 10
+  return Math.min(3 + level - 1, 10);
+}
+
 function initGame() {
-  board = Array(9).fill('');
+  const size = getBoardSize();
+  board = Array(size * size).fill('');
   currentPlayer = 'X';
   gameOver = false;
   statusEl.textContent = `Level ${level} / ${maxLevel} - Player X's turn`;
@@ -30,9 +36,11 @@ function initGame() {
 }
 
 function renderBoard() {
+  const size = getBoardSize();
   boardEl.innerHTML = '';
-  // Always render 9 cells
-  for (let idx = 0; idx < 9; idx++) {
+  boardEl.style.gridTemplateColumns = `repeat(${size}, 80px)`;
+  boardEl.style.gridTemplateRows = `repeat(${size}, 80px)`;
+  for (let idx = 0; idx < size * size; idx++) {
     const cell = board[idx];
     const cellEl = document.createElement('div');
     cellEl.className = 'ttt-cell';
@@ -42,6 +50,7 @@ function renderBoard() {
   }
 }
 
+modeSelect && (modeSelect.value = 'ai');
 modeSelect && modeSelect.addEventListener('change', () => {
   mode = modeSelect.value;
   initGame();
@@ -85,7 +94,12 @@ function nextLevel() {
 function aiMove() {
   // AI gets smarter each level: random at level 1, blocks/wins at higher levels
   let idx;
-  if (level === 1) {
+  const size = getBoardSize();
+  if (size > 3) {
+    // Only basic AI for larger boards
+    const empty = board.map((v, i) => v === '' ? i : null).filter(i => i !== null);
+    idx = empty[Math.floor(Math.random() * empty.length)];
+  } else if (level === 1) {
     // Level 1: random move
     const empty = board.map((v, i) => v === '' ? i : null).filter(i => i !== null);
     idx = empty[Math.floor(Math.random() * empty.length)];
@@ -112,9 +126,30 @@ function aiMove() {
   }
 }
 
+function checkWin(player) {
+  const size = getBoardSize();
+  // Check rows
+  for (let r = 0; r < size; r++) {
+    if (Array.from({length: size}, (_, c) => board[r*size + c]).every(v => v === player)) return true;
+  }
+  // Check cols
+  for (let c = 0; c < size; c++) {
+    if (Array.from({length: size}, (_, r) => board[r*size + c]).every(v => v === player)) return true;
+  }
+  // Check main diag
+  if (Array.from({length: size}, (_, i) => board[i*size + i]).every(v => v === player)) return true;
+  // Check anti-diag
+  if (Array.from({length: size}, (_, i) => board[i*size + (size-1-i)]).every(v => v === player)) return true;
+  return false;
+}
+
 function findBestMove(lvl) {
-  // Level 2: block win, Level 3+: win if possible, block, else random
-  // Level 5+: prefer center/corners, Level 8+: minimax
+  const size = getBoardSize();
+  // Only basic AI for larger boards
+  if (size > 3) {
+    const empty = board.map((v, i) => v === '' ? i : null).filter(i => i !== null);
+    return empty[Math.floor(Math.random() * empty.length)];
+  }
   // 1. Try to win
   let winIdx = findWinOrBlock('O');
   if (lvl >= 3 && winIdx !== undefined) return winIdx;
@@ -137,6 +172,8 @@ function findBestMove(lvl) {
 }
 
 function findWinOrBlock(player) {
+  const size = getBoardSize();
+  if (size > 3) return undefined;
   const wins = [
     [0,1,2],[3,4,5],[6,7,8],
     [0,3,6],[1,4,7],[2,5,8],
@@ -151,6 +188,8 @@ function findWinOrBlock(player) {
 }
 
 function minimaxMove() {
+  const size = getBoardSize();
+  if (size > 3) return findBestMove(level); // fallback to random for big boards
   let bestScore = -Infinity;
   let move;
   for (let i = 0; i < 9; i++) {
@@ -168,6 +207,8 @@ function minimaxMove() {
 }
 
 function minimax(b, depth, isMax) {
+  const size = getBoardSize();
+  if (size > 3) return 0;
   if (checkWin('O')) return 10 - depth;
   if (checkWin('X')) return depth - 10;
   if (b.every(cell => cell)) return 0;
@@ -192,15 +233,6 @@ function minimax(b, depth, isMax) {
     }
     return best;
   }
-}
-
-function checkWin(player) {
-  const wins = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
-  return wins.some(line => line.every(i => board[i] === player));
 }
 
 restartBtn.addEventListener('click', () => {
