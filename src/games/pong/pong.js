@@ -1,3 +1,6 @@
+// Moved to src/games/pong/pong.js
+// Please update your references.
+
 console.log('Pong game script loaded');
 window.addEventListener('error', function(e) {
   document.body.innerHTML = '<pre style="color:red;font-size:1.2em;">Script error: ' + e.message + '\n' + (e.filename || '') + ':' + (e.lineno || '') + '</pre>';
@@ -6,7 +9,7 @@ window.addEventListener('error', function(e) {
 
 // Pong Game Logic (moved from main.js)
 // All game logic and rendering for Pong
-import '../style.css';
+import '../../style.css';
 
 // Simple Pong Game: Play against the computer
 // Beginner-friendly, clear comments
@@ -158,6 +161,10 @@ function update() {
   if (ballX - ballSize < 8) {
     aiScore++;
     updateScoreboard();
+    if (aiScore >= 3) {
+      showGameOverOverlay();
+      return;
+    }
     resetBall();
   }
   // Score for player
@@ -383,6 +390,37 @@ function checkLevelUp() {
       showNextLevelOverlay();
     }
   }
+}
+
+// Show Game Over overlay when player loses
+function showGameOverOverlay() {
+  waitingForNextLevel = true;
+  stopAtariMusic();
+  const overlay = document.createElement('div');
+  overlay.id = 'gameOverOverlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0,0,0,0.7)';
+  overlay.style.display = 'flex';
+  overlay.style.flexDirection = 'column';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.style.zIndex = '1000';
+  overlay.innerHTML = `
+    <div style="background:linear-gradient(135deg,#fff 60%,#e0eafc 100%);padding:40px 60px;border-radius:24px;box-shadow:0 4px 32px #0006;text-align:center;">
+      <h2 style="color:#ff1744;text-shadow:0 0 12px #fff,0 0 24px #ff1744;">💀 Game Over!</h2>
+      <p style="font-size:20px;color:#3498db;">The computer reached 3 points.<br>Try again!</p>
+      <button id="restartBtn" style="font-size:22px;padding:14px 40px;margin-top:24px;cursor:pointer;background:linear-gradient(90deg,#ff1744,#ff8a65);border:none;border-radius:12px;box-shadow:0 0 16px #ff1744;font-weight:bold;">Restart Game 🔄</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('restartBtn').onclick = () => {
+    overlay.remove();
+    restartGame();
+  };
 }
 
 // Ensure test hooks are always available for E2E

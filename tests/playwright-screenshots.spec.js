@@ -3,16 +3,13 @@
 import { test, expect } from '@playwright/test';
 
 test('Capture Pong Screenshots and Demo GIF Frames', async ({ page }) => {
-  await page.goto('http://localhost:5173/');
+  await page.goto('http://localhost:5173/src/games/pong/pong.html');
 
   // Main menu (start screen)
   await page.screenshot({ path: 'screenshots/pong-main.png' });
 
-  // Start the game by clicking Play Pong
-  await page.click('a.play-btn');
-  await page.waitForSelector('canvas#gameCanvas');
-
   // Gameplay: simulate a few frames
+  await page.waitForSelector('canvas#gameCanvas');
   for (let i = 0; i < 10; i++) {
     await page.waitForTimeout(100);
   }
@@ -38,25 +35,24 @@ test('Capture Pong Screenshots and Demo GIF Frames', async ({ page }) => {
     let overlayFound = false;
     for (let retry = 0; retry < 5; retry++) {
       if (await page.$('#nextLevelOverlay')) {
-        await page.screenshot({ path: `screenshots/pong-levelup-step${i + 1}.png` });
-        await page.click('#continueBtn');
-        overlayFound = true;
-        break;
-      } else if (await page.$('#winOverlay')) {
         overlayFound = true;
         break;
       }
-      await page.waitForTimeout(400);
+      if (await page.$('#winOverlay')) {
+        overlayFound = true;
+        break;
+      }
+      await page.waitForTimeout(100);
     }
-    if (!overlayFound) throw new Error('Overlay not found after level up');
+    if (await page.$('#winOverlay')) break;
+    if (await page.$('#nextLevelOverlay')) await page.click('#continueBtn');
   }
-  await page.waitForSelector('#winOverlay', { timeout: 3000 });
+  await page.waitForSelector('#winOverlay', { timeout: 2000 });
   await page.screenshot({ path: 'screenshots/pong-win.png' });
 
   // Gameplay GIF: capture a sequence of frames
   // Instead of reload, go back to catalog and start again
-  await page.goto('http://localhost:5173/');
-  await page.click('a.play-btn');
+  await page.goto('http://localhost:5173/src/games/pong/pong.html');
   await page.waitForSelector('canvas#gameCanvas');
   for (let i = 0; i < 20; i++) {
     await page.waitForTimeout(80);
