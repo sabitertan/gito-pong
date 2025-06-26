@@ -12,4 +12,10 @@ export const gameCatalog = [
     img: 'screenshots/pong-levelup-step8.png', // Placeholder, update with Mario screenshot if available
     link: '/src/games/supermario/supermario.html',
   },
+  {
+    title: 'Temple Run 4-Lane',
+    desc: 'Dodge obstacles, jump, and race to the finish in this colorful 4-lane runner!',
+    img: 'screenshots/pong-levelup-step5.png', // Placeholder, update with Temple Run screenshot if available
+    link: '/src/games/templerun/templerun.html',
+  },
 ];

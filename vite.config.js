@@ -10,6 +10,7 @@ export default defineConfig({
         pong: resolve(__dirname, 'src/games/pong/pong.html'),
         supermario: resolve(__dirname, 'src/games/supermario/supermario.html'),
         tictactoe: resolve(__dirname, 'src/games/tictactoe/tictactoe.html'),
+        templerun: resolve(__dirname, 'src/games/templerun/templerun.html'),
       }
     }
   }

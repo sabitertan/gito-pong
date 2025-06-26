@@ -59,6 +59,12 @@ Run all Playwright E2E tests:
 npx playwright test
 ```
 
+## 🕹️ Game Catalog Screenshots
+
+| Pong | Super Mario | Tic Tac Toe | Temple Run 4-Lane |
+|---|---|---|---|
+| ![Pong](screenshots/pong-test.png) | ![Mario](screenshots/supermario-test.png) | ![Tic Tac Toe](screenshots/tictactoe-test.png) | ![Temple Run](screenshots/templerun-test.png) |
+
 ---
 
 Happy coding!
