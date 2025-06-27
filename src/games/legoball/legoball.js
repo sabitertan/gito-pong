@@ -97,21 +97,80 @@ scene.add(wallLight3);
 
 // --- Ball throwing logic ---
 const balls = [];
-function throwBall() {
-  const ballBody = new CANNON.Body({ mass: 1, shape: new CANNON.Sphere(0.6), position: new CANNON.Vec3(0, 2, 6) });
-  ballBody.velocity.set((Math.random()-0.5)*2, 0.5+Math.random(), -16);
+let ballsLeft = 20;
+let gameOver = false;
+
+// UI: Show balls left
+const infoDiv = document.createElement('div');
+infoDiv.style.position = 'absolute';
+infoDiv.style.top = '32px';
+infoDiv.style.right = '48px';
+infoDiv.style.fontSize = '2em';
+infoDiv.style.color = '#00ffe7';
+infoDiv.style.textShadow = '0 0 8px #0ff, 0 0 16px #fff';
+infoDiv.innerText = `Balls left: ${ballsLeft}`;
+document.body.appendChild(infoDiv);
+
+function updateBallsLeft() {
+  infoDiv.innerText = `Balls left: ${ballsLeft}`;
+}
+
+function showEndOverlay(win) {
+  overlay.innerHTML = `<div>${win ? 'You Win! 🎉' : 'Game Over!'}<br><br><button class='legoball-btn'>Restart</button></div>`;
+  overlay.style.display = 'flex';
+  overlay.querySelector('button').onclick = () => { window.location.reload(); };
+}
+
+function allBricksDown() {
+  // Only check bricks not in the bottom row (y > 0.5)
+  return blocks.filter(b => b.body.position.y > 0.5)
+    .every(b => b.body.position.y < 0.5 + 0.52); // 0.52 is row height
+}
+
+function throwBall(event) {
+  if (gameOver || ballsLeft <= 0) return;
+  ballsLeft--;
+  updateBallsLeft();
+  // Calculate target direction from camera to mouse pointer in world space
+  let mouseX = 0, mouseY = 0;
+  if (event && event.clientX !== undefined) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    // Convert mouse to normalized device coordinates (-1 to 1)
+    mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  }
+  // Project mouse to a point on the wall's z plane
+  const zTarget = -6;
+  const vector = new THREE.Vector3(mouseX, mouseY, 0.5); // z=0.5 for perspective
+  vector.unproject(camera);
+  // Direction from camera to target
+  const dir = vector.sub(camera.position).normalize();
+  // Find intersection with z=zTarget plane
+  const t = (zTarget - camera.position.z) / dir.z;
+  const target = camera.position.clone().add(dir.multiplyScalar(t));
+  // Ball starts at (0,2,6), aim toward target
+  const start = new CANNON.Vec3(0, 2, 6);
+  const velocity = new CANNON.Vec3(target.x - start.x, target.y - start.y, target.z - start.z).unit().scale(16);
+  const ballBody = new CANNON.Body({ mass: 1, shape: new CANNON.Sphere(0.6), position: start.clone() });
+  ballBody.velocity.set(velocity.x, velocity.y, velocity.z);
   world.addBody(ballBody);
   const ballGeo = new THREE.SphereGeometry(0.6, 32, 32);
   const ballMat = new THREE.MeshStandardMaterial({ color: 0xb0b0b0, metalness: 0.8, roughness: 0.2, emissive: 0xffffff, emissiveIntensity: 0.5 });
   const ballMesh = new THREE.Mesh(ballGeo, ballMat);
-  // Add glow using a point light
   const glow = new THREE.PointLight(0xffffff, 1, 6);
   ballMesh.add(glow);
   scene.add(ballMesh);
   balls.push({ body: ballBody, mesh: ballMesh });
+  if (ballsLeft === 0) {
+    setTimeout(() => {
+      gameOver = true;
+      if (allBricksDown()) showEndOverlay(true);
+      else showEndOverlay(false);
+    }, 1200);
+  }
 }
 
-window.addEventListener('click', throwBall);
+renderer.domElement.addEventListener('click', throwBall);
 
 // Remove the original single ball
 scene.remove(ballMesh);
@@ -129,6 +188,11 @@ function animate() {
   for (const b of blocks) {
     b.mesh.position.copy(b.body.position);
     b.mesh.quaternion.copy(b.body.quaternion);
+  }
+  // Check win condition
+  if (!gameOver && allBricksDown()) {
+    gameOver = true;
+    showEndOverlay(true);
   }
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
