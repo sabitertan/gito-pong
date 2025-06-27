@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lego Ball WebGL Demo</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <style>
+    body { background: #181c2f; }
+    #legoball-canvas { background: #222; display: block; margin: 0 auto; border-radius: 16px; box-shadow: 0 0 24px #00ffe7a0; }
+    .legoball-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.5); color: #fff; font-size: 2em; z-index: 10;
+      flex-direction: column; text-shadow: 0 0 8px #0ff, 0 0 16px #f0f;
+    }
+    .legoball-btn {
+      margin-top: 24px; padding: 12px 32px; font-size: 1em;
+      border: none; border-radius: 8px;
+      background: linear-gradient(90deg, #00ffe7, #ff00c8);
+      color: #fff; cursor: pointer; box-shadow: 0 2px 8px #0004;
+      transition: background 0.2s;
+    }
+    .legoball-btn:hover { background: linear-gradient(90deg, #ff00c8, #00ffe7); }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1 style="color:#00ffe7;text-shadow:0 0 8px #00ffe7a0;">Lego Ball WebGL</h1>
+    <a href="/index.html" style="position:absolute;left:24px;top:24px;font-size:1.1em;color:#3498db;text-shadow:0 0 6px #fff,0 0 12px #0ff;z-index:20;">← Main Menu</a>
+    <canvas id="legoball-canvas" width="640" height="480"></canvas>
+    <div id="legoball-overlay" class="legoball-overlay" style="display:none"></div>
+  </div>
+  <script type="module" src="./legoball.js"></script>
+</body>
+</html>
