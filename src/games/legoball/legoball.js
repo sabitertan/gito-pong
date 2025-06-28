@@ -47,6 +47,20 @@ const groundMesh = new THREE.Mesh(groundGeo, groundMat);
 groundMesh.rotation.x = -Math.PI/2;
 scene.add(groundMesh);
 
+// Add a bright ambient light to lighten the whole scene
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Soft white
+scene.add(ambientLight);
+
+// Add a much brighter yellow point light above the scene
+const yellowLight = new THREE.PointLight(0xffee88, 2.5, 80);
+yellowLight.position.set(0, 12, 0);
+scene.add(yellowLight);
+
+// Add a soft white directional light for even illumination
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+dirLight.position.set(0, 10, 10);
+scene.add(dirLight);
+
 // --- Brick wall setup ---
 const blocks = [];
 function createBrick(x, y, z, color) {
@@ -57,50 +71,177 @@ function createBrick(x, y, z, color) {
   }
   const body = new CANNON.Body({ mass: 0.5, shape: new CANNON.Box(new CANNON.Vec3(0.5,0.25,0.25)), position: new CANNON.Vec3(x, y, z) });
   world.addBody(body);
-  const geo = new THREE.BoxGeometry(1,0.5,0.5);
-  const mat = new THREE.MeshStandardMaterial({ color });
-  const mesh = new THREE.Mesh(geo, mat);
-  scene.add(mesh);
-  return { body, mesh };
+  // Lego brick geometry: base + studs
+  const baseGeo = new THREE.BoxGeometry(1,0.5,0.5);
+  const baseMat = new THREE.MeshStandardMaterial({ color });
+  const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+  // Add 2x2 studs on top
+  const studs = [];
+  for (let sx = -0.25; sx <= 0.25; sx += 0.5) {
+    for (let sz = -0.125; sz <= 0.125; sz += 0.25) {
+      const studGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.13, 20);
+      // Make the stud color match the brick color
+      const studMat = new THREE.MeshStandardMaterial({ color, metalness: 0.2, roughness: 0.3 });
+      const stud = new THREE.Mesh(studGeo, studMat);
+      stud.position.set(sx, 0.29, sz);
+      baseMesh.add(stud);
+      studs.push(stud);
+    }
+  }
+  scene.add(baseMesh);
+  return { body, mesh: baseMesh };
 }
 
-// Remove old blocks
-for (const b of blocks) {
-  scene.remove(b.mesh);
-  world.removeBody(b.body);
-}
-blocks.length = 0;
+// --- Level animal shapes ---
+const animalLevels = [
+  // Each array is a 2D grid (rows x cols), 1=brick, 0=empty
+  // Level 1: Simple rectangle (starter)
+  [
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+  ],
+  // Level 2: Cat face
+  [
+    [0,1,1,0,0,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [1,0,1,1,1,1,0,1],
+    [1,1,1,1,1,1,1,1],
+    [0,1,1,1,1,1,1,0],
+    [0,0,1,1,1,1,0,0],
+  ],
+  // Level 3: Dog face
+  [
+    [0,1,1,0,0,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [1,0,1,1,1,1,0,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,0,1,1,0,1,1],
+    [0,1,1,1,1,1,1,0],
+  ],
+  // Level 4: Fish
+  [
+    [0,0,1,1,1,1,0,0],
+    [0,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [0,1,1,1,1,1,1,0],
+    [0,0,1,1,1,1,0,0],
+    [0,0,0,1,1,0,0,0],
+  ],
+  // Level 5: Bird
+  [
+    [0,0,0,1,1,0,0,0],
+    [0,0,1,1,1,1,0,0],
+    [0,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [0,0,1,1,1,1,0,0],
+    [0,0,0,1,1,0,0,0],
+  ],
+  // Level 6: Bunny
+  [
+    [0,1,0,0,0,0,1,0],
+    [1,1,1,1,1,1,1,1],
+    [1,0,1,1,1,1,0,1],
+    [1,1,1,1,1,1,1,1],
+    [0,1,1,1,1,1,1,0],
+    [0,0,1,1,1,1,0,0],
+  ],
+  // Level 7: Elephant
+  [
+    [0,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,0,1,1,0,1,1],
+    [0,1,1,0,0,1,1,0],
+  ],
+  // Level 8: Duck
+  [
+    [0,0,0,1,1,0,0,0],
+    [0,0,1,1,1,1,0,0],
+    [0,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [0,1,1,1,1,1,1,0],
+    [0,0,1,1,1,1,0,0],
+  ],
+  // Level 9: Frog
+  [
+    [0,1,1,0,0,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [1,0,1,1,1,1,0,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,0,1,1,0,1,1],
+    [0,1,1,1,1,1,1,0],
+  ],
+  // Level 10: Lion
+  [
+    [0,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1],
+    [1,1,0,1,1,0,1,1],
+    [1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1],
+    [0,1,1,1,1,1,1,0],
+  ],
+];
+let currentLevel = 0;
 
-// Build a wall at z = -6
-const wallRows = 6, wallCols = 8;
-for (let y = 0; y < wallRows; ++y) {
-  for (let x = 0; x < wallCols; ++x) {
-    const bx = (x - wallCols/2 + 0.5) * 1.05;
-    const by = 0.25 + y * 0.52;
-    const color = (y % 2 === 0) ? 0xffa500 : 0xffe066;
-    blocks.push(createBrick(bx, by, -6, color));
+function buildWall(levelIdx) {
+  // Remove old blocks
+  for (const b of blocks) {
+    scene.remove(b.mesh);
+    world.removeBody(b.body);
+  }
+  blocks.length = 0;
+  const shape = animalLevels[levelIdx];
+  const rows = shape.length, cols = shape[0].length;
+  // Use a rainbow palette for each row for more color
+  const rainbow = [0xff5555, 0xffa500, 0xfffa00, 0x00ff00, 0x00cfff, 0x0055ff, 0xaa00ff, 0xff00aa];
+  for (let y = 0; y < rows; ++y) {
+    for (let x = 0; x < cols; ++x) {
+      if (shape[y][x]) {
+        const bx = (x - cols/2 + 0.5) * 1.05;
+        const by = 0.25 + y * 0.52;
+        // Assign a color from the rainbow palette based on x and y for variety
+        const color = rainbow[(x + y) % rainbow.length];
+        blocks.push(createBrick(bx, by, -6, color));
+      }
+    }
   }
 }
 
-// --- Add lights over the brick wall ---
-const wallLight = new THREE.PointLight(0xffffff, 1.2, 20);
-wallLight.position.set(0, 5, -6);
-scene.add(wallLight);
+function nextLevel() {
+  // Remove all balls from previous level
+  for (const b of balls) {
+    scene.remove(b.mesh);
+    world.removeBody(b.body);
+  }
+  balls.length = 0;
+  currentLevel++;
+  if (currentLevel >= animalLevels.length) {
+    overlay.innerHTML = `<div>You completed all levels! 🎉<br><br><button class='legoball-btn'>Restart</button></div>`;
+    overlay.style.display = 'flex';
+    overlay.querySelector('button').onclick = () => { window.location.reload(); };
+    return;
+  }
+  ballsLeft = 20;
+  updateBallsLeft();
+  buildWall(currentLevel);
+  gameOver = false;
+  overlay.style.display = 'none';
+}
 
-const wallLight2 = new THREE.PointLight(0xffa500, 0.7, 12);
-wallLight2.position.set(-4, 4, -5);
-scene.add(wallLight2);
+// Replace wall build on start
+buildWall(currentLevel);
 
-const wallLight3 = new THREE.PointLight(0x00cfff, 0.7, 12);
-wallLight3.position.set(4, 4, -7);
-scene.add(wallLight3);
-
-// --- Ball throwing logic ---
+// --- UI and game logic ---
 const balls = [];
 let ballsLeft = 20;
 let gameOver = false;
 
-// UI: Show balls left
+// UI: Show balls left and current level
 const infoDiv = document.createElement('div');
 infoDiv.style.position = 'absolute';
 infoDiv.style.top = '32px';
@@ -108,17 +249,23 @@ infoDiv.style.right = '48px';
 infoDiv.style.fontSize = '2em';
 infoDiv.style.color = '#00ffe7';
 infoDiv.style.textShadow = '0 0 8px #0ff, 0 0 16px #fff';
-infoDiv.innerText = `Balls left: ${ballsLeft}`;
+infoDiv.innerText = `Balls left: ${ballsLeft}\nLevel: ${currentLevel + 1}`;
 document.body.appendChild(infoDiv);
 
 function updateBallsLeft() {
-  infoDiv.innerText = `Balls left: ${ballsLeft}`;
+  infoDiv.innerText = `Balls left: ${ballsLeft}\nLevel: ${currentLevel + 1}`;
 }
 
 function showEndOverlay(win) {
-  overlay.innerHTML = `<div>${win ? 'You Win! 🎉' : 'Game Over!'}<br><br><button class='legoball-btn'>Restart</button></div>`;
-  overlay.style.display = 'flex';
-  overlay.querySelector('button').onclick = () => { window.location.reload(); };
+  if (win) {
+    overlay.innerHTML = `<div>Level Complete!<br><br><button class='legoball-btn'>Next Level</button></div>`;
+    overlay.style.display = 'flex';
+    overlay.querySelector('button').onclick = nextLevel;
+  } else {
+    overlay.innerHTML = `<div>Game Over!<br><br><button class='legoball-btn'>Restart</button></div>`;
+    overlay.style.display = 'flex';
+    overlay.querySelector('button').onclick = () => { window.location.reload(); };
+  }
 }
 
 function allBricksDown() {
@@ -200,3 +347,24 @@ function animate() {
 
 animate();
 // --- END minimal three.js + cannon-es setup ---
+
+// --- Responsive resize ---
+function resizeGame() {
+  const aspect = 4/3;
+  let w = window.innerWidth * 0.8;
+  let h = window.innerHeight * 0.7;
+  if (w/h > aspect) w = h * aspect; else h = w / aspect;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.width = w;
+  canvas.height = h;
+  // Move infoDiv to top right of canvas
+  const rect = renderer.domElement.getBoundingClientRect();
+  infoDiv.style.left = (rect.right - 220) + 'px';
+  infoDiv.style.top = (rect.top + 32) + 'px';
+}
+window.addEventListener('resize', resizeGame);
+resizeGame();
