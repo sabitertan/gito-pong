@@ -63,7 +63,7 @@ npx playwright test
 
 | Pong | Super Mario | Tic Tac Toe | Temple Run 4-Lane | Lego Ball |
 |---|---|---|---|---|
-| ![Pong](screenshots/pong-test.png) | ![Mario](screenshots/supermario-test.png) | ![Tic Tac Toe](screenshots/tictactoe-test.png) | ![Temple Run](screenshots/templerun-test.png) | ![Lego Ball](screenshots/legoball-test.png) |
+| ![Pong](screenshots/pong-test.png) | ![Mario](screenshots/supermario-test.png) | ![Tic Tac Toe](screenshots/tictactoe-test.png) | ![Temple Run](screenshots/templerun-test.png) | ![Lego Ball](screenshots/legoball-demo.png) |
 
 ---
 

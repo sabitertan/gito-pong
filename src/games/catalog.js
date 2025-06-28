@@ -18,4 +18,10 @@ export const gameCatalog = [
     img: 'screenshots/pong-levelup-step5.png', // Placeholder, update with Temple Run screenshot if available
     link: '/src/games/templerun/templerun.html',
   },
+  {
+    title: 'LegoBall',
+    desc: 'Bounce the ball with Lego-style paddles! Simple, fun, and colorful.',
+    img: 'screenshots/legoball-demo.png',
+    link: '/src/games/legoball/legoball.html',
+  },
 ];
