@@ -11,6 +11,7 @@ export default defineConfig({
         supermario: resolve(__dirname, 'src/games/supermario/supermario.html'),
         tictactoe: resolve(__dirname, 'src/games/tictactoe/tictactoe.html'),
         templerun: resolve(__dirname, 'src/games/templerun/templerun.html'),
+        legoball: resolve(__dirname, 'src/games/legoball/legoball.html'), // Added legoball.html as entry
       }
     }
   }
