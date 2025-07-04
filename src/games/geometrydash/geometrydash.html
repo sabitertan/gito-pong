@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geometry Dash Clone</title>
+  <link rel="stylesheet" href="../../style.css" />
+  <style>
+    body { background: #181c2f; }
+    canvas { display: block; margin: 40px auto; background: #222; box-shadow: 0 0 40px #0ff8, 0 0 0 8px #fff2 inset; border-radius: 16px; }
+    .gd-prompt { text-align: center; color: #fff; font-size: 2rem; margin-top: 1rem; text-shadow: 0 0 8px #0ff, 0 0 16px #f0f; }
+    .gd-btn { background: #0ff; color: #222; border: none; border-radius: 8px; padding: 0.5em 1.5em; font-size: 1.2rem; margin-top: 1rem; cursor: pointer; box-shadow: 0 0 8px #0ff, 0 0 16px #f0f; transition: background 0.2s; }
+    .gd-btn:hover { background: #f0f; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="gd-prompt" id="gdPrompt"></div>
+  <canvas id="gdCanvas" width="800" height="400"></canvas>
+  <script src="geometrydash.js"></script>
+</body>
+</html>
